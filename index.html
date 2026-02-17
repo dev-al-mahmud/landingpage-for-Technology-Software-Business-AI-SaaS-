@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ResearchCollab — AI Research Workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+<style>
+/* ── RESET & BASE ──────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --blue:        #2563EB;
+  --blue-dark:   #1D4ED8;
+  --indigo:      #6366F1;
+  --violet:      #8B5CF6;
+  --grad:        linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  --grad-blue:   linear-gradient(135deg, #2563EB 0%, #6366F1 100%);
+  --ink:         #0F172A;
+  --ink-2:       #1E293B;
+  --muted:       #64748B;
+  --muted-light: #94A3B8;
+  --border:      #E2E8F0;
+  --surface:     #F8FAFC;
+  --white:       #FFFFFF;
+  --ff-display:  'DM Serif Display', Georgia, serif;
+  --ff-body:     'DM Sans', sans-serif;
+  --radius:      12px;
+  --radius-lg:   20px;
+  --shadow-sm:   0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+  --shadow:      0 4px 16px rgba(15,23,42,.08), 0 2px 6px rgba(15,23,42,.04);
+  --shadow-lg:   0 20px 60px rgba(15,23,42,.12), 0 8px 24px rgba(15,23,42,.06);
+  --shadow-xl:   0 40px 80px rgba(15,23,42,.16);
+}
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: var(--ff-body);
+  font-size: 16px;
+  color: var(--ink);
+  background: var(--white);
+  overflow-x: hidden;
+}
+img { display: block; max-width: 100%; }
+a { text-decoration: none; color: inherit; }
+button { cursor: pointer; font-family: inherit; border: none; outline: none; }
+
+/* ── UTILITY ───────────────────────────────────────────────────── */
+.container { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+.section   { padding: 100px 0; }
+.section--sm { padding: 72px 0; }
+.label {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--blue); padding: 6px 14px; border-radius: 40px;
+  background: rgba(37,99,235,.08); border: 1px solid rgba(37,99,235,.15);
+  margin-bottom: 20px;
+}
+.label__dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--blue);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .5; transform: scale(.7); }
+}
+.h1 { font-family: var(--ff-display); font-size: clamp(42px, 6vw, 72px); line-height: 1.05; color: var(--ink); }
+.h2 { font-family: var(--ff-display); font-size: clamp(32px, 4vw, 52px); line-height: 1.1; color: var(--ink); }
+.h3 { font-family: var(--ff-display); font-size: clamp(22px, 2.5vw, 32px); line-height: 1.2; color: var(--ink); }
+.gradient-text {
+  background: var(--grad);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 15px; font-weight: 600; padding: 13px 26px;
+  border-radius: 9px; transition: all .2s ease;
+}
+.btn-primary {
+  background: var(--blue); color: #fff;
+  box-shadow: 0 2px 12px rgba(37,99,235,.35);
+}
+.btn-primary:hover { background: var(--blue-dark); box-shadow: 0 6px 20px rgba(37,99,235,.4); transform: translateY(-1px); }
+.btn-ghost {
+  color: var(--ink); background: transparent; border: 1.5px solid var(--border);
+}
+.btn-ghost:hover { border-color: var(--muted-light); background: var(--surface); }
+.btn-white {
+  background: white; color: var(--blue); box-shadow: var(--shadow);
+}
+.btn-white:hover { box-shadow: var(--shadow-lg); transform: translateY(-1px); }
+.btn-grad {
+  background: var(--grad); color: #fff;
+  box-shadow: 0 4px 20px rgba(99,102,241,.4);
+}
+.btn-grad:hover { box-shadow: 0 8px 30px rgba(99,102,241,.5); transform: translateY(-2px); }
+.btn svg { width: 18px; height: 18px; }
+
+/* ── NAVBAR ────────────────────────────────────────────────────── */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+  background: rgba(255,255,255,.92); backdrop-filter: blur(16px);
+  border-bottom: 1px solid transparent;
+  transition: border-color .3s, box-shadow .3s;
+  height: 68px; display: flex; align-items: center;
+}
+.nav.scrolled { border-color: var(--border); box-shadow: var(--shadow-sm); }
+.nav__inner {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; max-width: 1160px; margin: 0 auto; padding: 0 24px;
+}
+.nav__logo {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 17px; font-weight: 700; color: var(--ink); margin-right: 8px;
+}
+.nav__logo-mark {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: var(--grad-blue); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.nav__logo-mark svg { width: 18px; height: 18px; }
+.nav__links { display: flex; align-items: center; gap: 4px; margin-left: 16px; flex: 1; }
+.nav__link {
+  font-size: 14px; font-weight: 500; color: var(--muted);
+  padding: 7px 13px; border-radius: 7px; transition: all .15s;
+}
+.nav__link:hover { color: var(--ink); background: var(--surface); }
+.nav__actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.nav__login { font-size: 14px; font-weight: 500; color: var(--muted); padding: 8px 14px; border-radius: 7px; transition: color .15s; }
+.nav__login:hover { color: var(--ink); }
+.nav__cta { font-size: 14px; padding: 9px 20px; border-radius: 8px; }
+.nav__hamburger { display: none; background: none; padding: 6px; border-radius: 7px; }
+.nav__hamburger svg { width: 22px; height: 22px; color: var(--ink); }
+
+/* ── HERO ──────────────────────────────────────────────────────── */
+.hero {
+  padding: 148px 0 100px;
+  position: relative; overflow: hidden;
+}
+.hero__bg {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,102,241,.07) 0%, transparent 70%);
+}
+.hero__grid-lines {
+  position: absolute; inset: 0; pointer-events: none; opacity: .35;
+  background-image:
+    linear-gradient(rgba(99,102,241,.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,102,241,.1) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 0%, transparent 80%);
+}
+.hero__inner {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 60px; align-items: center;
+  position: relative; z-index: 1;
+}
+.hero__text {}
+.hero__eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 500; color: var(--muted);
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 6px 14px; border-radius: 40px; margin-bottom: 28px;
+}
+.hero__eyebrow-badge {
+  font-size: 11px; font-weight: 700; color: var(--white);
+  background: var(--grad); padding: 2px 8px; border-radius: 20px;
+}
+.hero__h1 { margin-bottom: 24px; }
+.hero__h1 em { font-style: italic; }
+.hero__sub {
+  font-size: 18px; line-height: 1.65; color: var(--muted); max-width: 480px;
+  margin-bottom: 40px;
+}
+.hero__ctas { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 48px; }
+.hero__cta-note { font-size: 13px; color: var(--muted-light); display: flex; align-items: center; gap: 6px; }
+.hero__cta-note svg { width: 14px; height: 14px; color: #22C55E; }
+.hero__stats { display: flex; gap: 32px; flex-wrap: wrap; }
+.hero__stat { }
+.hero__stat-num {
+  font-family: var(--ff-display); font-size: 28px; color: var(--ink); line-height: 1;
+  margin-bottom: 4px;
+}
+.hero__stat-label { font-size: 13px; color: var(--muted); }
+
+/* ── DASHBOARD MOCKUP ──────────────────────────────────────────── */
+.hero__visual { position: relative; }
+.mockup {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-xl);
+  overflow: hidden; position: relative;
+}
+.mockup__bar {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 12px 16px; display: flex; align-items: center; gap: 10px;
+}
+.mockup__dots { display: flex; gap: 6px; }
+.mockup__dot {
+  width: 11px; height: 11px; border-radius: 50%;
+}
+.mockup__dot:nth-child(1) { background: #FC5756; }
+.mockup__dot:nth-child(2) { background: #FDBC2C; }
+.mockup__dot:nth-child(3) { background: #2AC340; }
+.mockup__url {
+  flex: 1; background: var(--border); border-radius: 6px;
+  padding: 5px 12px; font-size: 12px; color: var(--muted); text-align: center;
+}
+.mockup__body { display: flex; height: 420px; }
+.mockup__sidebar {
+  width: 220px; border-right: 1px solid var(--border); padding: 16px;
+  background: var(--surface); flex-shrink: 0;
+}
+.mockup__sidebar-label {
+  font-size: 10px; font-weight: 700; color: var(--muted-light);
+  letter-spacing: .08em; text-transform: uppercase; margin-bottom: 12px;
+}
+.mockup__search {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px; margin-bottom: 16px; font-size: 12px; color: var(--muted);
+}
+.mockup__search svg { width: 13px; height: 13px; flex-shrink: 0; }
+.mockup__paper {
+  padding: 9px 10px; border-radius: 7px; margin-bottom: 6px;
+  border: 1px solid transparent; cursor: pointer; transition: all .15s;
+}
+.mockup__paper.active { background: rgba(37,99,235,.06); border-color: rgba(37,99,235,.18); }
+.mockup__paper-title { font-size: 11px; font-weight: 600; color: var(--ink-2); line-height: 1.35; margin-bottom: 4px; }
+.mockup__paper-meta { font-size: 10px; color: var(--muted-light); }
+.mockup__main { flex: 1; padding: 20px; overflow: hidden; }
+.mockup__query {
+  background: var(--ink-2); border-radius: 9px; padding: 12px 16px;
+  margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
+}
+.mockup__query-text { font-size: 13px; color: rgba(255,255,255,.85); flex: 1; }
+.mockup__query-btn {
+  background: var(--grad-blue); color: white; border: none;
+  border-radius: 6px; padding: 6px 12px; font-size: 11px; font-weight: 600; cursor: pointer;
+}
+.mockup__ai-label {
+  font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--indigo); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+}
+.mockup__ai-label span { width: 6px; height: 6px; border-radius: 50%; background: var(--indigo); display: inline-block; }
+.mockup__insight {
+  background: linear-gradient(135deg, rgba(99,102,241,.05) 0%, rgba(139,92,246,.05) 100%);
+  border: 1px solid rgba(99,102,241,.15);
+  border-radius: 9px; padding: 12px 14px; margin-bottom: 12px;
+  font-size: 12px; line-height: 1.6; color: var(--ink-2);
+}
+.mockup__tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.mockup__tag {
+  font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 20px;
+  background: rgba(37,99,235,.08); color: var(--blue); border: 1px solid rgba(37,99,235,.15);
+}
+.mockup__refs-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted-light); margin-bottom: 8px; }
+.mockup__ref {
+  font-size: 11px; color: var(--muted); padding: 5px 0; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+}
+.mockup__ref svg { width: 10px; height: 10px; color: var(--blue); flex-shrink: 0; }
+
+.mockup__badge {
+  position: absolute; background: var(--white);
+  border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+  font-size: 12px;
+}
+.mockup__badge--tl { top: 24px; left: -40px; }
+.mockup__badge--br { bottom: 30px; right: -36px; }
+.mockup__badge-icon {
+  width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.mockup__badge-icon--green { background: rgba(34,197,94,.12); }
+.mockup__badge-icon--blue { background: rgba(37,99,235,.10); }
+.mockup__badge-icon svg { width: 16px; height: 16px; }
+.mockup__badge-text { }
+.mockup__badge-num { font-size: 16px; font-weight: 700; color: var(--ink); line-height: 1; }
+.mockup__badge-sub { font-size: 11px; color: var(--muted); }
+
+/* ── SOCIAL PROOF ──────────────────────────────────────────────── */
+.proof { padding: 48px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.proof__label { font-size: 13px; color: var(--muted-light); text-align: center; margin-bottom: 28px; font-weight: 500; letter-spacing: .04em; }
+.proof__logos { display: flex; align-items: center; justify-content: center; gap: 48px; flex-wrap: wrap; }
+.proof__logo {
+  font-size: 15px; font-weight: 700; color: var(--muted-light);
+  opacity: .7; transition: opacity .2s; letter-spacing: -.01em;
+}
+.proof__logo:hover { opacity: 1; }
+.proof__stat-row {
+  display: flex; justify-content: center; gap: 56px; flex-wrap: wrap;
+  margin-top: 32px; padding-top: 28px; border-top: 1px solid var(--border);
+}
+.proof__stat-item { text-align: center; }
+.proof__stat-num { font-family: var(--ff-display); font-size: 28px; color: var(--ink); }
+.proof__stat-desc { font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+/* ── PROBLEM / SOLUTION ────────────────────────────────────────── */
+.ps__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 56px; }
+.ps__card {
+  border-radius: var(--radius-lg); padding: 36px; position: relative; overflow: hidden;
+}
+.ps__card--problem { background: var(--surface); border: 1px solid var(--border); }
+.ps__card--solution {
+  background: var(--ink-2); color: white;
+  border: 1px solid rgba(255,255,255,.06);
+}
+.ps__card-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+}
+.ps__card--problem .ps__card-label { color: var(--muted); }
+.ps__card--solution .ps__card-label { color: rgba(255,255,255,.5); }
+.ps__card-emoji { font-size: 18px; }
+.ps__card-h { font-family: var(--ff-display); font-size: 26px; line-height: 1.15; margin-bottom: 28px; }
+.ps__card--solution .ps__card-h { color: white; }
+.ps__item {
+  display: flex; align-items: flex-start; gap: 13px; margin-bottom: 18px;
+}
+.ps__item-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+}
+.ps__card--problem .ps__item-icon { background: rgba(239,68,68,.08); }
+.ps__card--solution .ps__item-icon { background: rgba(34,197,94,.12); }
+.ps__item-icon svg { width: 15px; height: 15px; }
+.ps__item-text { font-size: 15px; line-height: 1.55; }
+.ps__card--problem .ps__item-text { color: var(--muted); }
+.ps__card--solution .ps__item-text { color: rgba(255,255,255,.75); }
+.ps__item-strong { font-weight: 600; display: block; margin-bottom: 2px; }
+.ps__card--problem .ps__item-strong { color: var(--ink); }
+.ps__card--solution .ps__item-strong { color: white; }
+
+/* ── HOW IT WORKS ──────────────────────────────────────────────── */
+.hiw { background: var(--surface); }
+.hiw__steps { margin-top: 64px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; position: relative; }
+.hiw__connector {
+  position: absolute; top: 44px; left: calc(33.3% - 24px); width: calc(66.6% + 48px);
+  height: 2px; pointer-events: none; z-index: 0;
+}
+.hiw__connector-line {
+  width: 100%; height: 2px;
+  background: linear-gradient(90deg, var(--indigo), var(--violet));
+  position: relative;
+}
+.hiw__connector-dot {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--violet); border: 2px solid white; box-shadow: 0 0 0 3px rgba(139,92,246,.2);
+}
+.hiw__connector-dot:first-child { left: 0; }
+.hiw__connector-dot:last-child { right: 0; left: auto; }
+.hiw__step {
+  background: white; border-radius: var(--radius-lg);
+  border: 1px solid var(--border); padding: 32px 28px;
+  position: relative; z-index: 1; box-shadow: var(--shadow-sm);
+  transition: box-shadow .25s, transform .25s;
+}
+.hiw__step:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); }
+.hiw__step-num {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--grad); display: flex; align-items: center; justify-content: center;
+  font-size: 17px; font-weight: 800; color: white; margin-bottom: 20px;
+  font-family: var(--ff-display);
+}
+.hiw__step-title { font-size: 19px; font-weight: 700; margin-bottom: 10px; color: var(--ink); }
+.hiw__step-body { font-size: 14px; line-height: 1.65; color: var(--muted); margin-bottom: 20px; }
+.hiw__step-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; color: var(--indigo);
+  background: rgba(99,102,241,.08); border: 1px solid rgba(99,102,241,.15);
+  padding: 5px 11px; border-radius: 20px;
+}
+
+/* ── DEMO SECTION ──────────────────────────────────────────────── */
+.demo { position: relative; overflow: hidden; }
+.demo__bg {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 70% 80% at 50% 50%, rgba(99,102,241,.05) 0%, transparent 70%);
+}
+.demo__inner { position: relative; z-index: 1; }
+.demo__header { text-align: center; margin-bottom: 56px; }
+.demo__tabs {
+  display: flex; justify-content: center; gap: 0; margin-top: 24px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 11px; padding: 4px; width: fit-content; margin-left: auto; margin-right: auto;
+}
+.demo__tab {
+  font-size: 14px; font-weight: 500; color: var(--muted);
+  padding: 9px 20px; border-radius: 8px; background: transparent;
+  transition: all .2s; border: none; cursor: pointer;
+}
+.demo__tab.active { background: white; color: var(--ink); font-weight: 600; box-shadow: var(--shadow-sm); }
+.demo__content { display: none; }
+.demo__content.active { display: block; }
+.demo__window {
+  background: var(--ink-2); border-radius: var(--radius-lg);
+  overflow: hidden; box-shadow: var(--shadow-xl);
+  border: 1px solid rgba(255,255,255,.06);
+}
+.demo__win-bar {
+  background: rgba(255,255,255,.04); border-bottom: 1px solid rgba(255,255,255,.06);
+  padding: 14px 20px; display: flex; align-items: center; gap: 12px;
+}
+.demo__win-dots { display: flex; gap: 7px; }
+.demo__win-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+}
+.demo__win-dot:nth-child(1) { background: rgba(252,87,86,.7); }
+.demo__win-dot:nth-child(2) { background: rgba(253,188,44,.7); }
+.demo__win-dot:nth-child(3) { background: rgba(42,195,64,.7); }
+.demo__win-title { font-size: 13px; color: rgba(255,255,255,.4); font-weight: 500; flex: 1; text-align: center; }
+.demo__win-body { padding: 28px; min-height: 320px; }
+
+/* Search tab */
+.demo__search-box {
+  display: flex; gap: 12px; margin-bottom: 28px;
+}
+.demo__search-input {
+  flex: 1; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 9px; padding: 12px 16px; color: rgba(255,255,255,.9);
+  font-family: var(--ff-body); font-size: 14px;
+}
+.demo__search-btn {
+  background: var(--grad-blue); color: white; border: none;
+  border-radius: 9px; padding: 12px 20px; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.demo__result {
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+  border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
+  transition: all .2s;
+}
+.demo__result:hover { background: rgba(255,255,255,.07); border-color: rgba(99,102,241,.4); }
+.demo__result-title { font-size: 14px; font-weight: 600; color: rgba(255,255,255,.9); margin-bottom: 6px; }
+.demo__result-meta { font-size: 12px; color: rgba(255,255,255,.35); margin-bottom: 8px; }
+.demo__result-snippet { font-size: 13px; color: rgba(255,255,255,.55); line-height: 1.55; }
+.demo__result-tags { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.demo__result-tag {
+  font-size: 10px; font-weight: 600; color: var(--indigo);
+  background: rgba(99,102,241,.12); border: 1px solid rgba(99,102,241,.2);
+  padding: 2px 8px; border-radius: 20px;
+}
+
+/* Graph tab */
+.demo__graph-svg { width: 100%; }
+.demo__graph-node {
+  cursor: pointer; transition: all .2s;
+}
+
+/* AI Summary tab */
+.demo__ai-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+}
+.demo__ai-icon {
+  width: 36px; height: 36px; border-radius: 9px;
+  background: var(--grad); display: flex; align-items: center; justify-content: center;
+}
+.demo__ai-icon svg { width: 18px; height: 18px; color: white; }
+.demo__ai-title { font-size: 15px; font-weight: 700; color: rgba(255,255,255,.9); }
+.demo__ai-sub { font-size: 12px; color: rgba(255,255,255,.35); }
+.demo__ai-block {
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+  border-radius: 10px; padding: 16px 18px; margin-bottom: 14px;
+}
+.demo__ai-section-label {
+  font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--violet); margin-bottom: 10px;
+}
+.demo__ai-text { font-size: 13px; line-height: 1.7; color: rgba(255,255,255,.6); }
+.demo__ai-highlight { color: rgba(255,255,255,.9); font-weight: 500; }
+.demo__ai-bullets { list-style: none; }
+.demo__ai-bullets li {
+  font-size: 13px; color: rgba(255,255,255,.6); padding: 5px 0;
+  padding-left: 16px; position: relative; line-height: 1.5;
+}
+.demo__ai-bullets li::before {
+  content: ''; position: absolute; left: 0; top: 12px;
+  width: 5px; height: 5px; border-radius: 50%; background: var(--indigo);
+}
+
+/* ── BENEFITS ──────────────────────────────────────────────────── */
+.benefits__grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-top: 56px; }
+.benefit-card {
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 32px; position: relative; overflow: hidden;
+  transition: all .25s;
+}
+.benefit-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(99,102,241,.25); transform: translateY(-3px); }
+.benefit-card__accent {
+  position: absolute; top: 0; right: 0;
+  width: 120px; height: 120px;
+  background: radial-gradient(circle, rgba(99,102,241,.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.benefit-card__icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 20px;
+}
+.benefit-card__icon svg { width: 22px; height: 22px; }
+.benefit-card__num {
+  font-family: var(--ff-display); font-size: 40px; color: var(--ink);
+  line-height: 1; margin-bottom: 8px;
+}
+.benefit-card__num span { font-size: 22px; }
+.benefit-card__title { font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
+.benefit-card__body { font-size: 14px; line-height: 1.65; color: var(--muted); }
+
+/* ── USE CASES ─────────────────────────────────────────────────── */
+.usecases { background: var(--ink-2); }
+.usecases .h2 { color: white; }
+.usecases .label { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.12); color: rgba(255,255,255,.7); }
+.usecases .label__dot { background: rgba(255,255,255,.7); }
+.uc__tabs {
+  display: flex; gap: 0; margin-top: 40px; margin-bottom: 40px;
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+  border-radius: 11px; padding: 4px; width: fit-content;
+}
+.uc__tab {
+  font-size: 14px; font-weight: 500; color: rgba(255,255,255,.45);
+  padding: 10px 22px; border-radius: 8px; transition: all .2s;
+  border: none; background: transparent; cursor: pointer;
+}
+.uc__tab.active {
+  background: white; color: var(--ink); font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+.uc__content { display: none; }
+.uc__content.active { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: center; }
+.uc__text {}
+.uc__tag {
+  display: inline-block; font-size: 12px; font-weight: 700;
+  color: var(--indigo); background: rgba(99,102,241,.15);
+  border: 1px solid rgba(99,102,241,.25); padding: 5px 12px; border-radius: 20px;
+  margin-bottom: 20px;
+}
+.uc__h { font-family: var(--ff-display); font-size: 28px; color: white; margin-bottom: 16px; }
+.uc__body { font-size: 15px; line-height: 1.7; color: rgba(255,255,255,.55); margin-bottom: 28px; }
+.uc__feature {
+  display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px;
+}
+.uc__feature-check {
+  width: 22px; height: 22px; border-radius: 6px;
+  background: rgba(34,197,94,.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.uc__feature-check svg { width: 12px; height: 12px; color: #22C55E; }
+.uc__feature-text { font-size: 14px; color: rgba(255,255,255,.7); line-height: 1.5; }
+.uc__feature-strong { font-weight: 600; color: rgba(255,255,255,.9); }
+.uc__card {
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+  border-radius: var(--radius-lg); padding: 28px;
+}
+.uc__card-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.35); margin-bottom: 16px; }
+.uc__card-metric { margin-bottom: 20px; }
+.uc__card-num { font-family: var(--ff-display); font-size: 52px; color: white; line-height: 1; }
+.uc__card-unit { font-size: 18px; vertical-align: super; }
+.uc__card-desc { font-size: 14px; color: rgba(255,255,255,.5); margin-top: 4px; }
+.uc__card-bar { height: 4px; background: rgba(255,255,255,.08); border-radius: 2px; margin-bottom: 8px; }
+.uc__card-bar-fill { height: 100%; background: var(--grad); border-radius: 2px; }
+.uc__card-bar-label { font-size: 11px; color: rgba(255,255,255,.35); margin-bottom: 20px; }
+
+/* ── TESTIMONIALS ──────────────────────────────────────────────── */
+.testimonials__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 56px; }
+.testi {
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 28px; position: relative; overflow: hidden;
+  transition: all .25s;
+}
+.testi:hover { box-shadow: var(--shadow-lg); border-color: rgba(99,102,241,.2); transform: translateY(-3px); }
+.testi__quote-mark {
+  font-family: var(--ff-display); font-size: 72px; line-height: 0.5;
+  color: rgba(99,102,241,.15); position: absolute; top: 24px; right: 20px;
+  pointer-events: none;
+}
+.testi__outcome {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 700; color: #22C55E;
+  background: rgba(34,197,94,.08); border: 1px solid rgba(34,197,94,.2);
+  padding: 5px 11px; border-radius: 20px; margin-bottom: 18px;
+}
+.testi__outcome svg { width: 13px; height: 13px; }
+.testi__body { font-size: 14px; line-height: 1.7; color: var(--muted); margin-bottom: 22px; }
+.testi__author { display: flex; align-items: center; gap: 12px; }
+.testi__avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700; color: white;
+  flex-shrink: 0;
+}
+.testi__name { font-size: 14px; font-weight: 700; color: var(--ink); }
+.testi__role { font-size: 12px; color: var(--muted-light); }
+.testi__stars { display: flex; gap: 2px; margin-bottom: 14px; }
+.testi__star { color: #FBBF24; font-size: 14px; }
+
+/* ── FAQ ───────────────────────────────────────────────────────── */
+.faq { background: var(--surface); }
+.faq__grid { max-width: 760px; margin: 56px auto 0; }
+.faq__item { border-bottom: 1px solid var(--border); }
+.faq__q {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 22px 0; cursor: pointer; gap: 20px;
+  font-size: 16px; font-weight: 600; color: var(--ink);
+  background: none; border: none; width: 100%; text-align: left; font-family: var(--ff-body);
+}
+.faq__q:hover { color: var(--blue); }
+.faq__icon { width: 22px; height: 22px; border-radius: 6px; background: var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .2s; }
+.faq__icon svg { width: 12px; height: 12px; color: var(--muted); transition: transform .3s; }
+.faq__item.open .faq__icon { background: var(--blue); }
+.faq__item.open .faq__icon svg { color: white; transform: rotate(45deg); }
+.faq__a {
+  font-size: 15px; line-height: 1.7; color: var(--muted);
+  max-height: 0; overflow: hidden; transition: max-height .35s ease, padding .35s ease;
+  padding: 0;
+}
+.faq__item.open .faq__a { max-height: 300px; padding-bottom: 22px; }
+
+/* ── FINAL CTA ─────────────────────────────────────────────────── */
+.final-cta {
+  background: var(--ink); position: relative; overflow: hidden;
+}
+.final-cta__orb1 {
+  position: absolute; width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,102,241,.2) 0%, transparent 70%);
+  left: -200px; top: 50%; transform: translateY(-50%);
+  pointer-events: none;
+}
+.final-cta__orb2 {
+  position: absolute; width: 400px; height: 400px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(139,92,246,.15) 0%, transparent 70%);
+  right: -100px; bottom: -100px;
+  pointer-events: none;
+}
+.final-cta__inner { position: relative; z-index: 1; text-align: center; }
+.final-cta__h { color: white; margin-bottom: 20px; }
+.final-cta__sub { font-size: 18px; color: rgba(255,255,255,.55); margin-bottom: 40px; max-width: 500px; margin-left: auto; margin-right: auto; }
+.final-cta__actions { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; }
+.final-cta__note { font-size: 13px; color: rgba(255,255,255,.35); display: flex; align-items: center; justify-content: center; gap: 6px; }
+.final-cta__note svg { width: 14px; height: 14px; color: #22C55E; }
+
+/* ── FOOTER ────────────────────────────────────────────────────── */
+.footer {
+  padding: 56px 0 32px;
+  border-top: 1px solid var(--border);
+}
+.footer__grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 48px; }
+.footer__brand p { font-size: 14px; line-height: 1.65; color: var(--muted); margin-top: 14px; max-width: 280px; }
+.footer__col-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--ink); margin-bottom: 18px; }
+.footer__links { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+.footer__links a { font-size: 14px; color: var(--muted); transition: color .15s; }
+.footer__links a:hover { color: var(--ink); }
+.footer__bottom {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  padding-top: 24px; border-top: 1px solid var(--border);
+  font-size: 13px; color: var(--muted-light);
+}
+.footer__bottom-links { display: flex; gap: 20px; }
+.footer__bottom-links a { color: var(--muted-light); transition: color .15s; }
+.footer__bottom-links a:hover { color: var(--ink); }
+
+/* ── MOBILE STICKY CTA ─────────────────────────────────────────── */
+.mobile-sticky {
+  display: none; position: fixed; bottom: 0; left: 0; right: 0;
+  background: white; border-top: 1px solid var(--border);
+  padding: 14px 20px; z-index: 998; box-shadow: 0 -4px 20px rgba(15,23,42,.08);
+}
+.mobile-sticky .btn { width: 100%; justify-content: center; }
+
+/* ── ANIMATIONS ────────────────────────────────────────────────── */
+.fade-up {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity .6s ease, transform .6s ease;
+}
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+.fade-up-delay-1 { transition-delay: .1s; }
+.fade-up-delay-2 { transition-delay: .2s; }
+.fade-up-delay-3 { transition-delay: .3s; }
+.fade-up-delay-4 { transition-delay: .4s; }
+
+/* ── RESPONSIVE ────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .hero__inner { grid-template-columns: 1fr; gap: 48px; }
+  .hero__visual { order: -1; }
+  .mockup__badge--tl, .mockup__badge--br { display: none; }
+  .mockup__sidebar { display: none; }
+  .ps__grid { grid-template-columns: 1fr; }
+  .hiw__steps { grid-template-columns: 1fr; }
+  .hiw__connector { display: none; }
+  .benefits__grid { grid-template-columns: 1fr; }
+  .testimonials__grid { grid-template-columns: 1fr; }
+  .uc__content.active { grid-template-columns: 1fr; }
+  .footer__grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+  .nav__links { display: none; }
+  .nav__login { display: none; }
+  .nav__hamburger { display: flex; }
+  .mobile-sticky { display: block; }
+  .section { padding: 72px 0; }
+}
+@media (max-width: 600px) {
+  .hero__stats { gap: 20px; }
+  .proof__logos { gap: 24px; }
+  .proof__stat-row { gap: 28px; }
+  .demo__tabs { flex-wrap: wrap; justify-content: center; }
+  .footer__grid { grid-template-columns: 1fr; }
+  .final-cta__actions { flex-direction: column; align-items: stretch; }
+  .final-cta__actions .btn { justify-content: center; }
+}
+
+/* Section center helper */
+.section-header { text-align: center; max-width: 640px; margin: 0 auto; }
+.section-header .label { display: inline-flex; }
+.section-sub { font-size: 17px; line-height: 1.65; color: var(--muted); margin-top: 16px; }
+</style>
+</head>
+<body>
+
+<!-- ── NAVBAR ───────────────────────────────────────────────────── -->
+<nav class="nav" id="navbar">
+  <div class="nav__inner">
+    <a href="#" class="nav__logo">
+      <img src="data:image/png;base64,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" alt="ResearchCollab" style="height:36px;width:auto;display:block;" />
+    </a>
+    <div class="nav__links">
+      <a href="#features" class="nav__link">Features</a>
+      <a href="#usecases" class="nav__link">Use Cases</a>
+      <a href="#pricing" class="nav__link">Pricing</a>
+      <a href="#faq" class="nav__link">Resources</a>
+    </div>
+    <div class="nav__actions">
+      <a href="#" class="nav__login">Log in</a>
+      <a href="#" class="btn btn-primary nav__cta">Start Free Research</a>
+      <button class="nav__hamburger" aria-label="Menu" id="hamburger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ── HERO ─────────────────────────────────────────────────────── -->
+<section class="hero" id="hero">
+  <div class="hero__bg"></div>
+  <div class="hero__grid-lines"></div>
+  <div class="container">
+    <div class="hero__inner">
+
+      <div class="hero__text">
+        <div class="hero__eyebrow">
+          <span class="hero__eyebrow-badge">NEW</span>
+          AI-powered academic research — 250M+ papers
+        </div>
+        <h1 class="h1 hero__h1">
+          Research Smarter —<br>
+          <em class="gradient-text">Not Harder.</em>
+        </h1>
+        <p class="hero__sub">
+          Search 250M+ academic papers, extract insights instantly, and collaborate with your team — all in one AI-powered research workspace.
+        </p>
+        <div class="hero__ctas">
+          <a href="#" class="btn btn-primary">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 3v14M3 10h14"/></svg>
+            Start Free Research
+          </a>
+          <a href="#demo" class="btn btn-ghost">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/></svg>
+            Watch Demo
+          </a>
+        </div>
+        <p class="hero__cta-note">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+          No credit card required &nbsp;·&nbsp; Free 14-day trial
+        </p>
+        <div class="hero__stats">
+          <div class="hero__stat">
+            <div class="hero__stat-num">250M+</div>
+            <div class="hero__stat-label">Academic papers</div>
+          </div>
+          <div class="hero__stat">
+            <div class="hero__stat-num">10×</div>
+            <div class="hero__stat-label">Faster research</div>
+          </div>
+          <div class="hero__stat">
+            <div class="hero__stat-num">40K+</div>
+            <div class="hero__stat-label">Researchers</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero__visual">
+        <!-- Floating badges -->
+        <div class="mockup__badge mockup__badge--tl">
+          <div class="mockup__badge-icon mockup__badge-icon--green">
+            <svg viewBox="0 0 20 20" fill="none" stroke="#22C55E" stroke-width="2"><path d="M5 10l4 4L15 7"/></svg>
+          </div>
+          <div class="mockup__badge-text">
+            <div class="mockup__badge-num">847</div>
+            <div class="mockup__badge-sub">Papers analyzed today</div>
+          </div>
+        </div>
+
+        <div class="mockup">
+          <div class="mockup__bar">
+            <div class="mockup__dots">
+              <div class="mockup__dot"></div>
+              <div class="mockup__dot"></div>
+              <div class="mockup__dot"></div>
+            </div>
+            <div class="mockup__url">app.researchcollab.ai</div>
+          </div>
+          <div class="mockup__body">
+            <div class="mockup__sidebar">
+              <div class="mockup__sidebar-label">Recent Searches</div>
+              <div class="mockup__search">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="5"/><path d="m15 15-3-3"/></svg>
+                Search 250M+ papers…
+              </div>
+              <div class="mockup__paper active">
+                <div class="mockup__paper-title">Transformer architectures in NLP review</div>
+                <div class="mockup__paper-meta">23 papers · 2 days ago</div>
+              </div>
+              <div class="mockup__paper">
+                <div class="mockup__paper-title">CRISPR gene editing clinical trials</div>
+                <div class="mockup__paper-meta">47 papers · 5 days ago</div>
+              </div>
+              <div class="mockup__paper">
+                <div class="mockup__paper-title">Quantum error correction methods</div>
+                <div class="mockup__paper-meta">31 papers · 1 week ago</div>
+              </div>
+            </div>
+            <div class="mockup__main">
+              <div class="mockup__query">
+                <div class="mockup__query-text">What are the latest advances in large language models?</div>
+                <button class="mockup__query-btn">Ask AI</button>
+              </div>
+              <div class="mockup__ai-label"><span></span>AI Research Synthesis</div>
+              <div class="mockup__insight">
+                Based on <strong>23 papers</strong> (2019–2024): Scaling laws remain central, with GPT-4 and PaLM 2 demonstrating emergent capabilities beyond 100B parameters. Key themes: RLHF alignment, efficient fine-tuning (LoRA), and multimodal integration.
+              </div>
+              <div class="mockup__tags">
+                <div class="mockup__tag">Transformers</div>
+                <div class="mockup__tag">RLHF</div>
+                <div class="mockup__tag">Scaling Laws</div>
+                <div class="mockup__tag">Multimodal</div>
+                <div class="mockup__tag">Fine-tuning</div>
+              </div>
+              <div class="mockup__refs-label">Top References</div>
+              <div class="mockup__ref">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 4h12v12H4z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M7 8h6M7 11h4"/></svg>
+                Attention Is All You Need — Vaswani et al., 2017
+              </div>
+              <div class="mockup__ref">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 4h12v12H4z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M7 8h6M7 11h4"/></svg>
+                GPT-4 Technical Report — OpenAI, 2023
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mockup__badge mockup__badge--br">
+          <div class="mockup__badge-icon mockup__badge-icon--blue">
+            <svg viewBox="0 0 20 20" fill="none" stroke="#2563EB" stroke-width="2"><circle cx="10" cy="10" r="7"/><path d="M7 10l2 2 4-4"/></svg>
+          </div>
+          <div class="mockup__badge-text">
+            <div class="mockup__badge-num">60%</div>
+            <div class="mockup__badge-sub">Faster lit review</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── SOCIAL PROOF ──────────────────────────────────────────────── -->
+<section class="proof">
+  <div class="container">
+    <div class="proof__label">Trusted by researchers at leading institutions</div>
+    <div class="proof__logos">
+      <div class="proof__logo">MIT</div>
+      <div class="proof__logo">Stanford University</div>
+      <div class="proof__logo">Oxford</div>
+      <div class="proof__logo">ETH Zürich</div>
+      <div class="proof__logo">Harvard Medical</div>
+      <div class="proof__logo">Cambridge</div>
+    </div>
+    <div class="proof__stat-row">
+      <div class="proof__stat-item">
+        <div class="proof__stat-num">250M+</div>
+        <div class="proof__stat-desc">Academic papers indexed</div>
+      </div>
+      <div class="proof__stat-item">
+        <div class="proof__stat-num">40,000+</div>
+        <div class="proof__stat-desc">Active researchers</div>
+      </div>
+      <div class="proof__stat-item">
+        <div class="proof__stat-num">1.2M+</div>
+        <div class="proof__stat-desc">Insights generated</div>
+      </div>
+      <div class="proof__stat-item">
+        <div class="proof__stat-num">4.9 ★</div>
+        <div class="proof__stat-desc">Average rating</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PROBLEM / SOLUTION ────────────────────────────────────────── -->
+<section class="section" id="features">
+  <div class="container">
+    <div class="section-header fade-up">
+      <div class="label"><span class="label__dot"></span>The Problem</div>
+      <h2 class="h2">Research today is <em class="gradient-text">broken.</em></h2>
+      <p class="section-sub">Researchers lose weeks to manual literature review, scattered tools, and siloed knowledge. There's a better way.</p>
+    </div>
+    <div class="ps__grid">
+      <div class="ps__card ps__card--problem fade-up">
+        <div class="ps__card-label"><span class="ps__card-emoji">😩</span> Research today</div>
+        <div class="ps__card-h">Fragmented, slow, and exhausting.</div>
+        <div class="ps__item">
+          <div class="ps__item-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="#EF4444" stroke-width="2"><circle cx="10" cy="10" r="7"/><path d="M10 7v3M10 13h.01"/></svg>
+          </div>
+          <div class="ps__item-text">
+            <span class="ps__item-strong">Hours spent just searching</span>
+            Wading through hundreds of irrelevant results to find papers that actually matter.
+          </div>
+        </div>
+        <div class="ps__item">
+          <div class="ps__item-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="#EF4444" stroke-width="2"><circle cx="10" cy="10" r="7"/><path d="M10 7v3M10 13h.01"/></svg>
+          </div>
+          <div class="ps__item-text">
+            <span class="ps__item-strong">Notes scattered across tools</span>
+            Zotero here, Notion there, PDFs on the desktop — no unified knowledge base.
+          </div>
+        </div>
+        <div class="ps__item">
+          <div class="ps__item-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="#EF4444" stroke-width="2"><circle cx="10" cy="10" r="7"/><path d="M10 7v3M10 13h.01"/></svg>
+          </div>
+          <div class="ps__item-text">
+            <span class="ps__item-strong">Team knowledge lost</span>
+            Every new member starts from zero. Institutional memory disappears when someone leaves.
+          </div>
+        </div>
+        <div class="ps__item">
+          <div class="ps__item-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="#EF4444" stroke-width="2"><circle cx="10" cy="10" r="7"/><path d="M10 7v3M10 13h.01"/></svg>
+          </div>
+          <div class="ps__item-text">
+            <span class="ps__item-strong">Repeated work, missed connections</span>
+            Hidden patterns between papers remain invisible. The same ground gets covered twice.
+          </div>
+        </div>
+      </div>
+
+      <div class="ps__card ps__card--solution fade-up fade-up-delay-2">
+        <div class="ps__card-label"><span class="ps__card-emoji">✨</span> ResearchCollab fixes it</div>
+        <div class="ps__card-h">One intelligent workspace for your entire research workflow.</div>
+        <div class="ps__item">
+          <div class="ps__item-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="#22C55E" stroke-width="2"><path d="M5 10l4 4L15 7"/></svg>
+          </div>
+          <div class="ps__item-text">
+            <span class="ps__item-strong">AI reads & synthesizes papers</span>
+            Ask a research question; get a structured synthesis across hundreds of papers in seconds.
+          </div>
+        </div>
+        <div class="ps__item">
+          <div class="ps__item-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="#22C55E" stroke-width="2"><path d="M5 10l4 4L15 7"/></svg>
+          </div>
+          <div class="ps__item-text">
+            <span class="ps__item-strong">Knowledge graph finds connections</span>
+            Visual graph reveals how concepts, authors, and methodologies connect across literature.
+          </div>
+        </div>
+        <div class="ps__item">
+          <div class="ps__item-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="#22C55E" stroke-width="2"><path d="M5 10l4 4L15 7"/></svg>
+          </div>
+          <div class="ps__item-text">
+            <span class="ps__item-strong">Shared team research brain</span>
+            Every paper, note, and insight your team has ever touched — searchable and structured.
+          </div>
+        </div>
+        <div class="ps__item">
+          <div class="ps__item-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="#22C55E" stroke-width="2"><path d="M5 10l4 4L15 7"/></svg>
+          </div>
+          <div class="ps__item-text">
+            <span class="ps__item-strong">Organizes knowledge automatically</span>
+            Tags, clusters, and surfaces relevant research without any manual effort from you.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ──────────────────────────────────────────────── -->
+<section class="section hiw">
+  <div class="container">
+    <div class="section-header fade-up">
+      <div class="label"><span class="label__dot"></span>How It Works</div>
+      <h2 class="h2">Three steps to research clarity.</h2>
+      <p class="section-sub">From question to publishable insights — in a single, structured workflow.</p>
+    </div>
+    <div class="hiw__steps">
+      <div class="hiw__connector">
+        <div class="hiw__connector-line">
+          <div class="hiw__connector-dot"></div>
+          <div class="hiw__connector-dot"></div>
+        </div>
+      </div>
+      <div class="hiw__step fade-up">
+        <div class="hiw__step-num">1</div>
+        <div class="hiw__step-title">Ask a Research Question</div>
+        <div class="hiw__step-body">Type your research question in natural language. ResearchCollab's AI generates a comprehensive topic map and identifies the most relevant literature across 250M+ papers.</div>
+        <div class="hiw__step-tag">
+          <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 2a6 6 0 110 12A6 6 0 0110 4zm0 3a1 1 0 100 2 1 1 0 000-2zm0 4a1 1 0 00-1 1v2a1 1 0 002 0v-2a1 1 0 00-1-1z"/></svg>
+          AI Topic Mapping
+        </div>
+      </div>
+      <div class="hiw__step fade-up fade-up-delay-2">
+        <div class="hiw__step-num">2</div>
+        <div class="hiw__step-title">Discover & Analyze</div>
+        <div class="hiw__step-body">AI extracts key findings, methodologies, and conclusions from each paper. The knowledge graph surfaces hidden connections between authors, concepts, and research threads.</div>
+        <div class="hiw__step-tag">
+          <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><circle cx="7" cy="7" r="2"/><circle cx="14" cy="6" r="2"/><circle cx="12" cy="14" r="2"/></svg>
+          Knowledge Graph
+        </div>
+      </div>
+      <div class="hiw__step fade-up fade-up-delay-3">
+        <div class="hiw__step-num">3</div>
+        <div class="hiw__step-title">Collaborate & Publish</div>
+        <div class="hiw__step-body">Share your research workspace with teammates. Export structured literature reviews, annotated bibliographies, and AI-synthesized summaries ready for publication.</div>
+        <div class="hiw__step-tag">
+          <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4zM5 8a5 5 0 0110 0c0 2-1 3.5-2 4.5L10 16l-3-3.5C6 11.5 5 10 5 8z"/></svg>
+          Team Collaboration
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── DEMO SECTION ──────────────────────────────────────────────── -->
+<section class="section demo" id="demo">
+  <div class="demo__bg"></div>
+  <div class="container demo__inner">
+    <div class="demo__header fade-up">
+      <div class="label"><span class="label__dot"></span>Product Demo</div>
+      <h2 class="h2">See ResearchCollab <em class="gradient-text">in action.</em></h2>
+      <p class="section-sub">An interactive preview of the core research workflow — search, graph, and AI synthesis.</p>
+      <div class="demo__tabs">
+        <button class="demo__tab active" data-tab="search">🔍 Paper Search</button>
+        <button class="demo__tab" data-tab="graph">🕸 Knowledge Graph</button>
+        <button class="demo__tab" data-tab="ai">🧠 AI Summary</button>
+      </div>
+    </div>
+
+    <!-- Search Tab -->
+    <div class="demo__content active" id="tab-search">
+      <div class="demo__window">
+        <div class="demo__win-bar">
+          <div class="demo__win-dots"><div class="demo__win-dot"></div><div class="demo__win-dot"></div><div class="demo__win-dot"></div></div>
+          <div class="demo__win-title">ResearchCollab — Paper Search</div>
+        </div>
+        <div class="demo__win-body">
+          <div class="demo__search-box">
+            <input class="demo__search-input" type="text" id="searchInput" value="transformer models attention mechanism" placeholder="Ask a research question…" />
+            <button class="demo__search-btn" id="searchBtn">Search 250M+</button>
+          </div>
+          <div id="searchResults">
+            <div class="demo__result">
+              <div class="demo__result-title">Attention Is All You Need</div>
+              <div class="demo__result-meta">Vaswani et al. · NeurIPS 2017 · Cited 85,000+</div>
+              <div class="demo__result-snippet">Proposes the Transformer, a model architecture eschewing recurrence and instead relying entirely on an attention mechanism to draw global dependencies...</div>
+              <div class="demo__result-tags"><span class="demo__result-tag">Transformers</span><span class="demo__result-tag">Attention</span><span class="demo__result-tag">NLP</span></div>
+            </div>
+            <div class="demo__result">
+              <div class="demo__result-title">BERT: Pre-training of Deep Bidirectional Transformers</div>
+              <div class="demo__result-meta">Devlin et al. · NAACL 2019 · Cited 49,000+</div>
+              <div class="demo__result-snippet">BERT is designed to pre-train deep bidirectional representations by jointly conditioning on both left and right context in all layers...</div>
+              <div class="demo__result-tags"><span class="demo__result-tag">BERT</span><span class="demo__result-tag">Pre-training</span><span class="demo__result-tag">Bidirectional</span></div>
+            </div>
+            <div class="demo__result">
+              <div class="demo__result-title">An Image is Worth 16x16 Words: Transformers for Image Recognition</div>
+              <div class="demo__result-meta">Dosovitskiy et al. · ICLR 2021 · Cited 22,000+</div>
+              <div class="demo__result-snippet">While the Transformer architecture has become de-facto standard for NLP tasks, its applications to computer vision remain limited...</div>
+              <div class="demo__result-tags"><span class="demo__result-tag">Vision</span><span class="demo__result-tag">ViT</span><span class="demo__result-tag">Image Classification</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Graph Tab -->
+    <div class="demo__content" id="tab-graph">
+      <div class="demo__window">
+        <div class="demo__win-bar">
+          <div class="demo__win-dots"><div class="demo__win-dot"></div><div class="demo__win-dot"></div><div class="demo__win-dot"></div></div>
+          <div class="demo__win-title">ResearchCollab — Knowledge Graph</div>
+        </div>
+        <div class="demo__win-body" style="padding:0; position:relative; min-height:380px;">
+          <canvas id="graphCanvas" style="width:100%;height:380px;display:block;"></canvas>
+          <div style="position:absolute;bottom:16px;left:16px;font-size:11px;color:rgba(255,255,255,.3);">Click nodes to explore connections</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Summary Tab -->
+    <div class="demo__content" id="tab-ai">
+      <div class="demo__window">
+        <div class="demo__win-bar">
+          <div class="demo__win-dots"><div class="demo__win-dot"></div><div class="demo__win-dot"></div><div class="demo__win-dot"></div></div>
+          <div class="demo__win-title">ResearchCollab — AI Synthesis</div>
+        </div>
+        <div class="demo__win-body">
+          <div class="demo__ai-header">
+            <div class="demo__ai-icon">
+              <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="white" stroke-width="1.5"/><path d="M7 9l2 2 4-4" stroke="white" stroke-width="1.5"/></svg>
+            </div>
+            <div>
+              <div class="demo__ai-title">AI Research Synthesis</div>
+              <div class="demo__ai-sub">Based on 23 papers — Transformers & Attention Mechanisms</div>
+            </div>
+          </div>
+          <div class="demo__ai-block">
+            <div class="demo__ai-section-label">🔍 Core Finding</div>
+            <div class="demo__ai-text">The <span class="demo__ai-highlight">Transformer architecture</span> (Vaswani et al., 2017) represents a fundamental shift from recurrence-based sequence models to <span class="demo__ai-highlight">pure attention mechanisms</span>. Subsequent work confirms this enables better long-range dependency modeling while improving parallelization and training efficiency by 3–8× vs. LSTMs.</div>
+          </div>
+          <div class="demo__ai-block">
+            <div class="demo__ai-section-label">📈 Research Trajectory</div>
+            <ul class="demo__ai-bullets">
+              <li><span class="demo__ai-highlight">2017–2019:</span> Foundation models established (BERT, GPT-1/2). Bidirectional context emerges as key advancement.</li>
+              <li><span class="demo__ai-highlight">2020–2022:</span> Scaling laws dominate. GPT-3 shows emergent capabilities. Efficient variants (LoRA, Adapter) reduce compute cost.</li>
+              <li><span class="demo__ai-highlight">2023–2024:</span> Multimodal integration (GPT-4V, Flamingo). RLHF alignment becomes standard practice.</li>
+            </ul>
+          </div>
+          <div class="demo__ai-block">
+            <div class="demo__ai-section-label">⚠️ Research Gaps Identified</div>
+            <div class="demo__ai-text">Interpretability of attention patterns remains underexplored. <span class="demo__ai-highlight">7 papers flagged</span> energy efficiency at inference scale as a critical open problem. Hallucination mitigation lacks systematic benchmarks.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── BENEFITS ──────────────────────────────────────────────────── -->
+<section class="section" id="benefits" style="background: var(--white);">
+  <div class="container">
+    <div class="section-header fade-up">
+      <div class="label"><span class="label__dot"></span>Key Benefits</div>
+      <h2 class="h2">Research outcomes, <em class="gradient-text">measurably better.</em></h2>
+      <p class="section-sub">Not vague promises — concrete improvements to how your team produces research.</p>
+    </div>
+    <div class="benefits__grid">
+      <div class="benefit-card fade-up">
+        <div class="benefit-card__accent"></div>
+        <div class="benefit-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div class="benefit-card__num">10<span>×</span></div>
+        <div class="benefit-card__title">Finish literature reviews faster</div>
+        <div class="benefit-card__body">AI synthesizes hundreds of papers into structured summaries in minutes, not weeks. Your time goes to thinking and writing — not manual searching.</div>
+      </div>
+      <div class="benefit-card fade-up fade-up-delay-1">
+        <div class="benefit-card__accent"></div>
+        <div class="benefit-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><circle cx="8" cy="8" r="3"/><circle cx="18" cy="6" r="2"/><circle cx="15" cy="18" r="2"/><path d="M11 8l5-2M10 10l4 7"/></svg>
+        </div>
+        <div class="benefit-card__num">Hidden</div>
+        <div class="benefit-card__title">Discover hidden research connections</div>
+        <div class="benefit-card__body">The knowledge graph reveals relationships between papers, authors, and concepts that manual reading would never surface. Find the missing link in your argument.</div>
+      </div>
+      <div class="benefit-card fade-up fade-up-delay-2">
+        <div class="benefit-card__accent"></div>
+        <div class="benefit-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        </div>
+        <div class="benefit-card__num">100%</div>
+        <div class="benefit-card__title">Structured insights from every paper</div>
+        <div class="benefit-card__body">Every paper you import is automatically parsed into methodology, findings, limitations, and citations. No more re-reading papers you already processed six months ago.</div>
+      </div>
+      <div class="benefit-card fade-up fade-up-delay-3">
+        <div class="benefit-card__accent"></div>
+        <div class="benefit-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <div class="benefit-card__num">Team</div>
+        <div class="benefit-card__title">Build your shared research brain</div>
+        <div class="benefit-card__body">Every team member's readings, annotations, and insights become a shared, searchable knowledge base. Institutional memory that outlasts individual team members.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── USE CASES ─────────────────────────────────────────────────── -->
+<section class="section usecases" id="usecases">
+  <div class="container">
+    <div class="section-header fade-up" style="margin-bottom:0;">
+      <div class="label"><span class="label__dot"></span>Use Cases</div>
+      <h2 class="h2">Built for every type of researcher.</h2>
+      <p class="section-sub" style="color:rgba(255,255,255,.5);">Whether you're writing your first thesis or running an institution-wide research program, ResearchCollab adapts to your workflow.</p>
+    </div>
+    <div class="uc__tabs">
+      <button class="uc__tab active" data-uc="students">Students</button>
+      <button class="uc__tab" data-uc="researchers">Researchers</button>
+      <button class="uc__tab" data-uc="teams">Teams</button>
+      <button class="uc__tab" data-uc="institutions">Institutions</button>
+    </div>
+
+    <div class="uc__content active" id="uc-students">
+      <div class="uc__text fade-up">
+        <div class="uc__tag">🎓 Postgraduate Students</div>
+        <div class="uc__h">Write your thesis in half the time.</div>
+        <div class="uc__body">Stop drowning in PDFs. ResearchCollab helps students structure entire literature reviews in days — with AI-generated summaries, citation management, and visual concept maps that make complex fields comprehensible.</div>
+        <div class="uc__feature">
+          <div class="uc__feature-check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></div>
+          <div class="uc__feature-text"><span class="uc__feature-strong">Thesis topic exploration</span> — Map any research field in minutes</div>
+        </div>
+        <div class="uc__feature">
+          <div class="uc__feature-check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></div>
+          <div class="uc__feature-text"><span class="uc__feature-strong">Auto-citation formatting</span> — APA, MLA, Chicago, Vancouver</div>
+        </div>
+        <div class="uc__feature">
+          <div class="uc__feature-check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></div>
+          <div class="uc__feature-text"><span class="uc__feature-strong">Research gap identification</span> — Find your original contribution</div>
+        </div>
+      </div>
+      <div class="uc__card fade-up fade-up-delay-2">
+        <div class="uc__card-label">Average outcome — Postgraduate Students</div>
+        <div class="uc__card-metric">
+          <div class="uc__card-num">3<span class="uc__card-unit">×</span></div>
+          <div class="uc__card-desc">faster literature review completion</div>
+        </div>
+        <div class="uc__card-bar"><div class="uc__card-bar-fill" style="width:78%"></div></div>
+        <div class="uc__card-bar-label">78% of students complete lit reviews in under 2 weeks</div>
+        <div class="uc__card-metric" style="margin-bottom:0;">
+          <div class="uc__card-num" style="font-size:32px;">92<span class="uc__card-unit" style="font-size:14px;">%</span></div>
+          <div class="uc__card-desc">report higher confidence in their research foundation</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="uc__content" id="uc-researchers">
+      <div class="uc__text fade-up">
+        <div class="uc__tag">🔬 Academic Researchers</div>
+        <div class="uc__h">Stay at the frontier without the grind.</div>
+        <div class="uc__body">Track emerging research threads, monitor citations, and synthesize cross-disciplinary literature — all while maintaining a personal research knowledge base that grows with your career.</div>
+        <div class="uc__feature">
+          <div class="uc__feature-check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></div>
+          <div class="uc__feature-text"><span class="uc__feature-strong">Citation tracking alerts</span> — Know when your work is cited</div>
+        </div>
+        <div class="uc__feature">
+          <div class="uc__feature-check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></div>
+          <div class="uc__feature-text"><span class="uc__feature-strong">Cross-domain synthesis</span> — Bridge disciplines effortlessly</div>
+        </div>
+        <div class="uc__feature">
+          <div class="uc__feature-check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></div>
+          <div class="uc__feature-text"><span class="uc__feature-strong">Grant writing support</span> — Turn lit reviews into proposals</div>
+        </div>
+      </div>
+      <div class="uc__card fade-up fade-up-delay-2">
+        <div class="uc__card-label">Average outcome — Academic Researchers</div>
+        <div class="uc__card-metric">
+          <div class="uc__card-num">60<span class="uc__card-unit" style="font-size:16px;">%</span></div>
+          <div class="uc__card-desc">reduction in literature review time</div>
+        </div>
+        <div class="uc__card-bar"><div class="uc__card-bar-fill" style="width:85%"></div></div>
+        <div class="uc__card-bar-label">85% publish faster after adopting ResearchCollab</div>
+        <div class="uc__card-metric" style="margin-bottom:0;">
+          <div class="uc__card-num" style="font-size:32px;">2.4<span class="uc__card-unit" style="font-size:14px;">×</span></div>
+          <div class="uc__card-desc">more papers reviewed per month on average</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="uc__content" id="uc-teams">
+      <div class="uc__text fade-up">
+        <div class="uc__tag">👥 Research Teams</div>
+        <div class="uc__h">Your team's knowledge, finally organized.</div>
+        <div class="uc__body">Stop reinventing the wheel. Collaborative workspaces let every team member build on each other's findings — with real-time co-editing, shared libraries, and unified annotation threads.</div>
+        <div class="uc__feature">
+          <div class="uc__feature-check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></div>
+          <div class="uc__feature-text"><span class="uc__feature-strong">Shared research workspace</span> — One source of truth for the team</div>
+        </div>
+        <div class="uc__feature">
+          <div class="uc__feature-check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></div>
+          <div class="uc__feature-text"><span class="uc__feature-strong">Role-based access</span> — Control who sees what</div>
+        </div>
+        <div class="uc__feature">
+          <div class="uc__feature-check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></div>
+          <div class="uc__feature-text"><span class="uc__feature-strong">Onboarding intelligence</span> — New members get up to speed instantly</div>
+        </div>
+      </div>
+      <div class="uc__card fade-up fade-up-delay-2">
+        <div class="uc__card-label">Average outcome — Research Teams</div>
+        <div class="uc__card-metric">
+          <div class="uc__card-num">5<span class="uc__card-unit">×</span></div>
+          <div class="uc__card-desc">faster new member onboarding</div>
+        </div>
+        <div class="uc__card-bar"><div class="uc__card-bar-fill" style="width:71%"></div></div>
+        <div class="uc__card-bar-label">71% reduction in duplicated research effort</div>
+        <div class="uc__card-metric" style="margin-bottom:0;">
+          <div class="uc__card-num" style="font-size:32px;">40<span class="uc__card-unit" style="font-size:14px;">%</span></div>
+          <div class="uc__card-desc">more collaborative publications per year</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="uc__content" id="uc-institutions">
+      <div class="uc__text fade-up">
+        <div class="uc__tag">🏛 Universities & Institutions</div>
+        <div class="uc__h">Institution-wide research intelligence.</div>
+        <div class="uc__body">Deploy ResearchCollab across departments with enterprise-grade security, SSO, compliance tools, and analytics that give research leadership unprecedented visibility into institutional output.</div>
+        <div class="uc__feature">
+          <div class="uc__feature-check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></div>
+          <div class="uc__feature-text"><span class="uc__feature-strong">SSO & SAML integration</span> — Seamless IT deployment</div>
+        </div>
+        <div class="uc__feature">
+          <div class="uc__feature-check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></div>
+          <div class="uc__feature-text"><span class="uc__feature-strong">Research analytics dashboard</span> — Track institutional output</div>
+        </div>
+        <div class="uc__feature">
+          <div class="uc__feature-check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg></div>
+          <div class="uc__feature-text"><span class="uc__feature-strong">GDPR & HIPAA compliant</span> — Enterprise data privacy</div>
+        </div>
+      </div>
+      <div class="uc__card fade-up fade-up-delay-2">
+        <div class="uc__card-label">Average outcome — Institutions</div>
+        <div class="uc__card-metric">
+          <div class="uc__card-num">200<span class="uc__card-unit" style="font-size:14px;">+</span></div>
+          <div class="uc__card-desc">departments currently using ResearchCollab</div>
+        </div>
+        <div class="uc__card-bar"><div class="uc__card-bar-fill" style="width:90%"></div></div>
+        <div class="uc__card-bar-label">90% renewal rate across enterprise contracts</div>
+        <div class="uc__card-metric" style="margin-bottom:0;">
+          <div class="uc__card-num" style="font-size:32px;">35<span class="uc__card-unit" style="font-size:14px;">%</span></div>
+          <div class="uc__card-desc">increase in cross-departmental collaboration</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TESTIMONIALS ──────────────────────────────────────────────── -->
+<section class="section">
+  <div class="container">
+    <div class="section-header fade-up">
+      <div class="label"><span class="label__dot"></span>Testimonials</div>
+      <h2 class="h2">Researchers who got <em class="gradient-text">their time back.</em></h2>
+      <p class="section-sub">Real outcomes from the ResearchCollab community — not generic praise.</p>
+    </div>
+    <div class="testimonials__grid">
+      <div class="testi fade-up">
+        <div class="testi__quote-mark">"</div>
+        <div class="testi__stars">★★★★★</div>
+        <div class="testi__outcome">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+          60% faster literature review
+        </div>
+        <div class="testi__body">"I submitted my systematic review 6 weeks ahead of schedule. ResearchCollab didn't just help me find papers — it helped me understand how they related to each other. That's the feature no other tool has."</div>
+        <div class="testi__author">
+          <div class="testi__avatar" style="background: var(--grad-blue);">A</div>
+          <div>
+            <div class="testi__name">Dr. Amara Osei</div>
+            <div class="testi__role">Neuroscience PhD · UCL</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi fade-up fade-up-delay-1">
+        <div class="testi__quote-mark">"</div>
+        <div class="testi__stars">★★★★★</div>
+        <div class="testi__outcome">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+          2.4× more papers reviewed monthly
+        </div>
+        <div class="testi__body">"My team of 8 researchers used to lose weeks every time someone new joined. ResearchCollab turned our collective knowledge into a searchable brain. Onboarding went from a month to a few days."</div>
+        <div class="testi__author">
+          <div class="testi__avatar" style="background: var(--grad);">M</div>
+          <div>
+            <div class="testi__name">Prof. Marco Bellini</div>
+            <div class="testi__role">Research Director · ETH Zürich</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi fade-up fade-up-delay-2">
+        <div class="testi__quote-mark">"</div>
+        <div class="testi__stars">★★★★★</div>
+        <div class="testi__outcome">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+          Thesis completed 6 weeks early
+        </div>
+        <div class="testi__body">"I was drowning in 300 papers for my climate policy thesis. ResearchCollab's AI found connections between economics and atmospheric science literature that I never would have spotted manually. It changed my entire argument."</div>
+        <div class="testi__author">
+          <div class="testi__avatar" style="background: linear-gradient(135deg, #2563EB, #6366F1);">S</div>
+          <div>
+            <div class="testi__name">Sara Lindqvist</div>
+            <div class="testi__role">PhD Candidate · Stockholm University</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FAQ ───────────────────────────────────────────────────────── -->
+<section class="section faq" id="faq">
+  <div class="container">
+    <div class="section-header fade-up">
+      <div class="label"><span class="label__dot"></span>FAQ</div>
+      <h2 class="h2">Questions before signing up?</h2>
+      <p class="section-sub">Everything you need to know to feel confident about starting.</p>
+    </div>
+    <div class="faq__grid">
+      <div class="faq__item open">
+        <button class="faq__q">
+          Is ResearchCollab better than Google Scholar?
+          <span class="faq__icon"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2v8M2 6h8"/></svg></span>
+        </button>
+        <div class="faq__a">Google Scholar is a search index. ResearchCollab is a full research workspace. We search the same 250M+ papers, but then we go further — AI synthesizes findings across papers, surfaces connections between them, and lets your team build a shared knowledge base around what you discover. Think of it as Scholar + Notion + a research assistant, combined.</div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__q">
+          Can multiple researchers collaborate in real time?
+          <span class="faq__icon"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2v8M2 6h8"/></svg></span>
+        </button>
+        <div class="faq__a">Yes — all plans above Individual include collaborative workspaces where team members can co-annotate papers, share AI summaries, build shared knowledge graphs, and comment on each other's research notes in real time. Role-based permissions let you control exactly who can edit vs. view.</div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__q">
+          Is my research data private and secure?
+          <span class="faq__icon"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2v8M2 6h8"/></svg></span>
+        </button>
+        <div class="faq__a">Absolutely. Your research, annotations, and documents are fully private and encrypted at rest and in transit. We are SOC 2 Type II certified, GDPR compliant, and HIPAA-ready for medical research teams. We never use your research data to train our AI models — your unpublished work stays yours.</div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__q">
+          Is there a free trial? Do I need a credit card?
+          <span class="faq__icon"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2v8M2 6h8"/></svg></span>
+        </button>
+        <div class="faq__a">Yes — we offer a 14-day free trial with full access to all features, no credit card required. After the trial, you can choose a plan that fits your needs, or continue with our free tier (limited to 50 paper searches per month). For institutions, we offer extended pilots with dedicated onboarding support.</div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__q">
+          What research databases does ResearchCollab cover?
+          <span class="faq__icon"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2v8M2 6h8"/></svg></span>
+        </button>
+        <div class="faq__a">ResearchCollab indexes 250M+ papers from PubMed, arXiv, Semantic Scholar, CrossRef, JSTOR, IEEE Xplore, ACM Digital Library, and dozens of domain-specific repositories. We update our index daily. Premium and enterprise plans also include paywalled journals via institutional access agreements.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FINAL CTA ──────────────────────────────────────────────────── -->
+<section class="section final-cta">
+  <div class="final-cta__orb1"></div>
+  <div class="final-cta__orb2"></div>
+  <div class="container final-cta__inner fade-up">
+    <div style="display:flex;justify-content:center;margin-bottom:28px;">
+      <img src="data:image/png;base64,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+3QLVbjdZq04Ojen16oiIs6sWiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIthar3dbVG+O310tM15y4MPMrKqNVaingfBNdql8cjS17S7gQeYWlRSWVtSxm42RwHTJwrLqaFzt4sBPkEREUZXkRERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERF/9k=" alt="ResearchCollab" style="height:44px;width:auto;display:block;opacity:.9;" />
+    </div>
+    <div class="label" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.7);">
+      <span class="label__dot" style="background:rgba(255,255,255,.7);"></span>
+      Start Today — Free
+    </div>
+    <h2 class="h2 final-cta__h">Start discovering research insights <em class="gradient-text">today.</em></h2>
+    <p class="final-cta__sub">Join 40,000+ researchers who've made their literature review process intelligent. No credit card. No setup. Just research.</p>
+    <div class="final-cta__actions">
+      <a href="#" class="btn btn-grad" style="padding:16px 32px; font-size:16px;">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 3v14M3 10h14"/></svg>
+        Start Free Research
+      </a>
+      <a href="#" class="btn btn-ghost" style="color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.2); padding:16px 28px; font-size:16px;">
+        Schedule a Demo
+      </a>
+    </div>
+    <p class="final-cta__note">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+      No credit card required &nbsp;·&nbsp; 14-day free trial &nbsp;·&nbsp; Cancel anytime
+    </p>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────────────────────────── -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a href="#" class="nav__logo">
+          <img src="data:image/png;base64,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" alt="ResearchCollab" style="height:32px;width:auto;display:block;" />
+        </a>
+        <p>The AI research workspace for academics, research teams, and institutions. Search smarter, discover connections, and collaborate at the speed of thought.</p>
+      </div>
+      <div>
+        <div class="footer__col-label">Product</div>
+        <ul class="footer__links">
+          <li><a href="#">Features</a></li>
+          <li><a href="#">Pricing</a></li>
+          <li><a href="#">Changelog</a></li>
+          <li><a href="#">Roadmap</a></li>
+          <li><a href="#">API Docs</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer__col-label">Company</div>
+        <ul class="footer__links">
+          <li><a href="#">About</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Press</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer__col-label">Resources</div>
+        <ul class="footer__links">
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">Research Guides</a></li>
+          <li><a href="#">Community</a></li>
+          <li><a href="#">Webinars</a></li>
+          <li><a href="#">Universities</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2026 ResearchCollab, Inc. All rights reserved.</span>
+      <div class="footer__bottom-links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Cookie Settings</a>
+        <a href="#">GDPR</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ── MOBILE STICKY ──────────────────────────────────────────────── -->
+<div class="mobile-sticky">
+  <a href="#" class="btn btn-primary">Start Free Research — No Credit Card</a>
+</div>
+
+<script>
+/* ── NAV SCROLL ─────────────────────────────────────────────────── */
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 20);
+});
+
+/* ── HAMBURGER (visual only) ────────────────────────────────────── */
+document.getElementById('hamburger').addEventListener('click', () => {
+  // Mobile users see the bottom CTA bar; hamburger is a placeholder
+});
+
+/* ── FADE IN ON SCROLL ──────────────────────────────────────────── */
+const fadeEls = document.querySelectorAll('.fade-up');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+}, { threshold: 0.12 });
+fadeEls.forEach(el => obs.observe(el));
+
+/* ── DEMO TABS ──────────────────────────────────────────────────── */
+document.querySelectorAll('.demo__tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.demo__tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.demo__content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    const key = tab.dataset.tab;
+    document.getElementById('tab-' + key).classList.add('active');
+    if (key === 'graph') initGraph();
+  });
+});
+
+/* ── USE CASE TABS ──────────────────────────────────────────────── */
+document.querySelectorAll('.uc__tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.uc__tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.uc__content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('uc-' + tab.dataset.uc).classList.add('active');
+  });
+});
+
+/* ── FAQ ACCORDION ──────────────────────────────────────────────── */
+document.querySelectorAll('.faq__q').forEach(q => {
+  q.addEventListener('click', () => {
+    const item = q.closest('.faq__item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq__item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  });
+});
+
+/* ── SEARCH DEMO (INTERACTIVE) ──────────────────────────────────── */
+const searchQueries = {
+  'default': [
+    { title: 'Attention Is All You Need', meta: 'Vaswani et al. · NeurIPS 2017 · Cited 85,000+', snippet: 'Proposes the Transformer architecture relying entirely on self-attention mechanisms to draw global dependencies between input and output...', tags: ['Transformers', 'Attention', 'NLP'] },
+    { title: 'BERT: Pre-training of Deep Bidirectional Transformers', meta: 'Devlin et al. · NAACL 2019 · Cited 49,000+', snippet: 'BERT is designed to pre-train deep bidirectional representations by jointly conditioning on both left and right context in all layers...', tags: ['BERT', 'Pre-training', 'Bidirectional'] },
+    { title: 'An Image is Worth 16x16 Words', meta: 'Dosovitskiy et al. · ICLR 2021 · Cited 22,000+', snippet: 'Applying Transformer architecture to sequences of image patches for image recognition at scale with large pre-training datasets...', tags: ['Vision', 'ViT', 'Image Classification'] }
+  ],
+  'climate': [
+    { title: 'Global Surface Temperature Change', meta: 'Hansen et al. · Reviews of Geophysics 2010 · Cited 6,200+', snippet: 'Global surface temperature in 2009 was the second warmest in the period of instrumental measurements, 0.57°C above the 1951-1980 mean...', tags: ['Climate', 'Temperature', 'Global Warming'] },
+    { title: 'Carbon Budget and Climate Change Mitigation', meta: 'Friedlingstein et al. · Nature 2020 · Cited 3,100+', snippet: 'Comprehensive assessment of the global carbon budget for 2020, combining fossil CO₂ emissions, land use change, and atmospheric growth...', tags: ['Carbon Budget', 'Emissions', 'Mitigation'] },
+    { title: 'Tipping Points in Earth Systems', meta: 'Lenton et al. · PNAS 2018 · Cited 2,900+', snippet: 'Self-reinforcing feedbacks in the Earth system could generate abrupt and irreversible change if tipping points are crossed...', tags: ['Tipping Points', 'Feedback Loops', 'Risk'] }
+  ],
+  'crispr': [
+    { title: 'A Programmable Dual-RNA-Guided DNA Endonuclease in Adaptive Immunity', meta: 'Jinek et al. · Science 2012 · Cited 15,000+', snippet: 'Cas9 endonuclease can be programmed using guide RNA sequences to cleave site-specific DNA, enabling precision genome editing...', tags: ['CRISPR', 'Cas9', 'Genome Editing'] },
+    { title: 'CRISPR-Cas9 for medical genetic screens in human cells', meta: 'Wang et al. · Science 2014 · Cited 4,800+', snippet: 'Genome-wide screens using CRISPR-Cas9 to identify genes essential for cell viability in cancer cell lines...', tags: ['Functional Genomics', 'Screens', 'Cancer'] },
+    { title: 'Base editing: precision chemical surgery on DNA', meta: 'Komor et al. · Nature 2016 · Cited 4,200+', snippet: 'Base editors enable direct, efficient and permanent conversion of one target DNA base to another without double-strand breaks...', tags: ['Base Editing', 'Precision Medicine', 'SNP'] }
+  ]
+};
+
+function getResultsForQuery(q) {
+  const ql = q.toLowerCase();
+  if (ql.includes('climate') || ql.includes('carbon') || ql.includes('temperature')) return searchQueries['climate'];
+  if (ql.includes('crispr') || ql.includes('gene') || ql.includes('cas9')) return searchQueries['crispr'];
+  return searchQueries['default'];
+}
+
+function renderResults(results) {
+  const container = document.getElementById('searchResults');
+  container.style.opacity = '0'; container.style.transform = 'translateY(8px)';
+  setTimeout(() => {
+    container.innerHTML = results.map(r => `
+      <div class="demo__result">
+        <div class="demo__result-title">${r.title}</div>
+        <div class="demo__result-meta">${r.meta}</div>
+        <div class="demo__result-snippet">${r.snippet}</div>
+        <div class="demo__result-tags">${r.tags.map(t => `<span class="demo__result-tag">${t}</span>`).join('')}</div>
+      </div>
+    `).join('');
+    container.style.transition = 'all .3s ease';
+    container.style.opacity = '1'; container.style.transform = 'translateY(0)';
+  }, 200);
+}
+
+document.getElementById('searchBtn').addEventListener('click', () => {
+  const q = document.getElementById('searchInput').value;
+  renderResults(getResultsForQuery(q));
+});
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('searchBtn').click();
+});
+
+/* ── KNOWLEDGE GRAPH CANVAS ─────────────────────────────────────── */
+let graphInitialized = false;
+function initGraph() {
+  if (graphInitialized) return;
+  graphInitialized = true;
+  const canvas = document.getElementById('graphCanvas');
+  const parent = canvas.parentElement;
+  canvas.width = parent.offsetWidth;
+  canvas.height = 380;
+  const ctx = canvas.getContext('2d');
+
+  const nodes = [
+    { id: 0, x: 0.5, y: 0.45, r: 26, label: 'Transformers', color: '#6366F1', textColor: 'white' },
+    { id: 1, x: 0.22, y: 0.25, r: 19, label: 'Attention', color: '#8B5CF6', textColor: 'white' },
+    { id: 2, x: 0.78, y: 0.28, r: 18, label: 'BERT', color: '#2563EB', textColor: 'white' },
+    { id: 3, x: 0.20, y: 0.72, r: 16, label: 'RNNs', color: '#475569', textColor: 'rgba(255,255,255,.7)' },
+    { id: 4, x: 0.75, y: 0.70, r: 17, label: 'GPT', color: '#2563EB', textColor: 'white' },
+    { id: 5, x: 0.48, y: 0.15, r: 14, label: 'Self-Attn', color: '#7C3AED', textColor: 'white' },
+    { id: 6, x: 0.87, y: 0.50, r: 13, label: 'ViT', color: '#475569', textColor: 'rgba(255,255,255,.7)' },
+    { id: 7, x: 0.30, y: 0.52, r: 12, label: 'Embeddings', color: '#334155', textColor: 'rgba(255,255,255,.7)' },
+    { id: 8, x: 0.63, y: 0.82, r: 12, label: 'Fine-tuning', color: '#334155', textColor: 'rgba(255,255,255,.7)' },
+    { id: 9, x: 0.12, y: 0.45, r: 11, label: 'LSTMs', color: '#334155', textColor: 'rgba(255,255,255,.5)' },
+  ];
+
+  const edges = [
+    [0,1],[0,2],[0,3],[0,4],[0,5],[0,7],
+    [1,5],[1,7],[2,4],[2,8],[4,6],[4,8],[1,9],[3,9]
+  ];
+
+  let hoveredNode = null;
+
+  function getCanvasPos(node) {
+    return { x: node.x * canvas.width, y: node.y * canvas.height };
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Edges
+    edges.forEach(([a, b]) => {
+      const pa = getCanvasPos(nodes[a]), pb = getCanvasPos(nodes[b]);
+      const isHovered = hoveredNode === a || hoveredNode === b;
+      const grad = ctx.createLinearGradient(pa.x, pa.y, pb.x, pb.y);
+      grad.addColorStop(0, isHovered ? 'rgba(99,102,241,.6)' : 'rgba(99,102,241,.2)');
+      grad.addColorStop(1, isHovered ? 'rgba(139,92,246,.6)' : 'rgba(139,92,246,.2)');
+      ctx.beginPath();
+      ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y);
+      ctx.strokeStyle = grad; ctx.lineWidth = isHovered ? 2 : 1;
+      ctx.stroke();
+    });
+    // Nodes
+    nodes.forEach((node, i) => {
+      const { x, y } = getCanvasPos(node);
+      const isHovered = hoveredNode === i;
+      const r = isHovered ? node.r * 1.15 : node.r;
+      // Glow
+      if (isHovered) {
+        const glow = ctx.createRadialGradient(x, y, r*.4, x, y, r*2.5);
+        glow.addColorStop(0, 'rgba(99,102,241,.3)');
+        glow.addColorStop(1, 'transparent');
+        ctx.beginPath(); ctx.arc(x, y, r*2.5, 0, Math.PI*2);
+        ctx.fillStyle = glow; ctx.fill();
+      }
+      // Circle
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2);
+      ctx.fillStyle = node.color; ctx.fill();
+      ctx.strokeStyle = isHovered ? 'rgba(255,255,255,.6)' : 'rgba(255,255,255,.15)';
+      ctx.lineWidth = isHovered ? 2 : 1; ctx.stroke();
+      // Label
+      ctx.fillStyle = node.textColor;
+      ctx.font = `${isHovered ? 700 : 500} ${Math.max(9, r*.58)}px DM Sans, sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(node.label, x, y);
+    });
+  }
+
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const my = (e.clientY - rect.top) * (canvas.height / rect.height);
+    let found = null;
+    nodes.forEach((node, i) => {
+      const { x, y } = getCanvasPos(node);
+      if (Math.hypot(mx - x, my - y) < node.r * 1.3) found = i;
+    });
+    hoveredNode = found;
+    canvas.style.cursor = found !== null ? 'pointer' : 'default';
+    draw();
+  });
+  canvas.addEventListener('mouseleave', () => { hoveredNode = null; draw(); });
+  draw();
+}
+</script>
+</body>
+</html>
